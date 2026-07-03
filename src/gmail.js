@@ -1,5 +1,5 @@
 /**
- * Gmail API client
+ * Gmail API client - Updated with push notification support
  * Handles fetching emails with "copilot" trigger and sending emails
  */
 
@@ -25,6 +25,26 @@ class GmailClient {
 
     this.auth = oauth2Client;
     this.gmail = google.gmail({ version: "v1", auth: oauth2Client });
+  }
+
+  /**
+   * Fetch a specific email by ID
+   */
+  async fetchEmailById(messageId) {
+    if (!this.gmail) await this.initialize();
+
+    try {
+      const res = await this.gmail.users.messages.get({
+        userId: "me",
+        id: messageId,
+        format: "full",
+      });
+
+      return this.parseMessage(res.data);
+    } catch (error) {
+      console.error(`❌ Failed to fetch email ${messageId}:`, error.message);
+      return null;
+    }
   }
 
   /**
@@ -171,6 +191,29 @@ class GmailClient {
       console.log(`✅ Email sent to ${to}`);
     } catch (error) {
       console.error("❌ Failed to send email:", error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Watch for Gmail changes (push notifications)
+   */
+  async watch(webhookUrl) {
+    if (!this.gmail) await this.initialize();
+
+    try {
+      const response = await this.gmail.users.watch({
+        userId: "me",
+        requestBody: {
+          topicName: "projects/myproject/topics/gmail-notifications",
+          labelIds: ["INBOX"],
+        },
+      });
+
+      console.log("✅ Gmail watch enabled:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("❌ Failed to enable watch:", error.message);
       throw error;
     }
   }

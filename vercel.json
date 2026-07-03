@@ -9,12 +9,7 @@
     "GROUPME_GROUP_ID": "@groupme_group_id",
     "GROUPME_SENDER_ID": "@groupme_sender_id",
     "GROUPME_IMAGE_UPLOAD_URL": "@groupme_image_upload_url",
-    "WEBHOOK_SECRET": "@webhook_secret"
-  },
-  "crons": [
-    {
-      "path": "/api/sync-emails",
-      "schedule": "* * * * *"
-    }
-  ]
+    "WEBHOOK_SECRET": "@webhook_secret",
+    "GMAIL_WEBHOOK_URL": "@gmail_webhook_url"
+  }
 }
