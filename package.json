@@ -1,0 +1,20 @@
+{
+  "name": "gmail-groupme-integration",
+  "version": "1.0.0",
+  "description": "Gmail to GroupMe integration with Copilot email trigger",
+  "main": "api/webhook.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel deploy --prod",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "googleapis": "^118.0.0",
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.2",
+    "form-data": "^4.0.0"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}

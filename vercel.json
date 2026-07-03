@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "env": [
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GOOGLE_REFRESH_TOKEN",
+    "GMAIL_EMAIL",
+    "GROUPME_ACCESS_TOKEN",
+    "GROUPME_GROUP_ID",
+    "GROUPME_SENDER_ID",
+    "GROUPME_IMAGE_UPLOAD_URL",
+    "WEBHOOK_SECRET"
+  ],
+  "crons": [
+    {
+      "path": "/api/sync-emails",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
