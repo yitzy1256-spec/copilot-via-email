@@ -1,10 +1,10 @@
 /**
  * Webhook endpoint for receiving GroupMe messages
- * Sends them back to your Gmail inbox
+ * Sends them back to your Gmail inbox with all attachments
  */
 
 const { gmail } = require("../src/gmail");
-const { fetchGroupMeMessages } = require("../src/groupme");
+const { fetchGroupMeMessages, downloadMedia } = require("../src/groupme");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
@@ -41,15 +41,16 @@ module.exports = async (req, res) => {
 
     // Format and send to Gmail
     for (const msg of newMessages) {
-      const emailBody = formatGroupMeMessage(msg);
+      const { emailBody, attachments } = await formatGroupMeMessage(msg);
 
       await gmail.sendEmail({
         to: process.env.GMAIL_EMAIL,
         subject: `💬 GroupMe: ${msg.name}`,
         body: emailBody,
+        attachments: attachments,
       });
 
-      console.log(`✅ Sent email from ${msg.name}`);
+      console.log(`✅ Sent email from ${msg.name} with ${attachments.length} attachment(s)`);
     }
 
     res.status(200).json({
@@ -62,14 +63,45 @@ module.exports = async (req, res) => {
   }
 };
 
-function formatGroupMeMessage(msg) {
+/**
+ * Format GroupMe message for email
+ * Download and include all media attachments
+ */
+async function formatGroupMeMessage(msg) {
   let body = `From: ${msg.name}\n`;
   body += `Time: ${new Date(msg.created_at * 1000).toLocaleString()}\n\n`;
   body += msg.text || "[No text message]";
 
+  let attachments = [];
+
+  // Process media attachments from GroupMe
   if (msg.attachments && msg.attachments.length > 0) {
-    body += `\n\nAttachments: ${msg.attachments.length} file(s)`;
+    body += `\n\n---\nMedia Attachments (${msg.attachments.length}):";
+
+    for (const attachment of msg.attachments) {
+      try {
+        if (attachment.type === "image" && attachment.url) {
+          console.log(`📷 Processing image: ${attachment.url}`);
+          const mediaData = await downloadMedia(attachment.url);
+          attachments.push(mediaData);
+          body += `\n✅ Image: ${mediaData.filename}`;
+        } else if (attachment.type === "video" && attachment.url) {
+          console.log(`🎥 Processing video: ${attachment.url}`);
+          const mediaData = await downloadMedia(attachment.url);
+          attachments.push(mediaData);
+          body += `\n✅ Video: ${mediaData.filename}`;
+        } else if (attachment.type === "file" && attachment.url) {
+          console.log(`📎 Processing file: ${attachment.url}`);
+          const mediaData = await downloadMedia(attachment.url);
+          attachments.push(mediaData);
+          body += `\n✅ File: ${mediaData.filename}`;
+        }
+      } catch (err) {
+        console.error(`❌ Failed to download attachment:`, err.message);
+        body += `\n❌ Failed to download: ${attachment.url}`;
+      }
+    }
   }
 
-  return body;
+  return { emailBody: body, attachments };
 }

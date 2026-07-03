@@ -1,10 +1,12 @@
 /**
  * GroupMe API client
- * Handles sending messages and uploading media
+ * Handles sending messages, uploading media, and downloading GroupMe attachments
  */
 
 const axios = require("axios");
 const FormData = require("form-data");
+const https = require("https");
+const { Readable } = require("stream");
 
 class GroupMeClient {
   constructor() {
@@ -39,6 +41,37 @@ class GroupMeClient {
       return res.data;
     } catch (error) {
       console.error("❌ Failed to send GroupMe message:", error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Download media from GroupMe CDN
+   */
+  async downloadMedia(mediaUrl) {
+    try {
+      console.log(`📥 Downloading media from: ${mediaUrl}`);
+
+      const res = await axios.get(mediaUrl, {
+        responseType: "arraybuffer",
+      });
+
+      // Extract filename from URL
+      const urlParts = mediaUrl.split("/");
+      const filename = urlParts[urlParts.length - 1] || "media";
+
+      // Determine MIME type from Content-Type header
+      const mimeType = res.headers["content-type"] || "application/octet-stream";
+
+      console.log(`✅ Downloaded: ${filename} (${mimeType})`);
+
+      return {
+        data: res.data,
+        filename: filename,
+        mimeType: mimeType,
+      };
+    } catch (error) {
+      console.error("❌ Failed to download media:", error.message);
       throw error;
     }
   }
@@ -99,5 +132,6 @@ class GroupMeClient {
 module.exports = {
   sendToGroupMe: (payload) => new GroupMeClient().sendToGroupMe(payload),
   uploadMedia: (attachment) => new GroupMeClient().uploadMedia(attachment),
+  downloadMedia: (mediaUrl) => new GroupMeClient().downloadMedia(mediaUrl),
   fetchGroupMeMessages: (limit) => new GroupMeClient().fetchGroupMeMessages(limit),
 };

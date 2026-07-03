@@ -173,7 +173,7 @@ class GmailClient {
   }
 
   /**
-   * Send email
+   * Send email with attachments
    */
   async sendEmail({ to, subject, body, attachments = [] }) {
     if (!this.gmail) await this.initialize();
@@ -188,7 +188,7 @@ class GmailClient {
         },
       });
 
-      console.log(`✅ Email sent to ${to}`);
+      console.log(`✅ Email sent to ${to} with ${attachments.length} attachment(s)`);
     } catch (error) {
       console.error("❌ Failed to send email:", error.message);
       throw error;
@@ -218,6 +218,9 @@ class GmailClient {
     }
   }
 
+  /**
+   * Create MIME message with attachments
+   */
   createMessage(to, subject, body, attachments = []) {
     const boundary = "===============7330845974216740156==";
     let emailContent = `To: ${to}\nSubject: ${subject}\nMIME-Version: 1.0\nContent-Type: multipart/mixed; boundary="${boundary}"\n\n`;
@@ -227,7 +230,15 @@ class GmailClient {
 
     // Add attachments if any
     for (const attachment of attachments) {
-      emailContent += `\n--${boundary}\nContent-Type: ${attachment.mimeType}; name="${attachment.filename}"\nContent-Disposition: attachment; filename="${attachment.filename}"\nContent-Transfer-Encoding: base64\n\n${Buffer.from(attachment.data).toString("base64")}\n`;
+      try {
+        const base64Data = Buffer.isBuffer(attachment.data)
+          ? attachment.data.toString("base64")
+          : Buffer.from(attachment.data).toString("base64");
+
+        emailContent += `\n--${boundary}\nContent-Type: ${attachment.mimeType}; name="${attachment.filename}"\nContent-Disposition: attachment; filename="${attachment.filename}"\nContent-Transfer-Encoding: base64\n\n${base64Data}\n`;
+      } catch (err) {
+        console.error(`❌ Error encoding attachment ${attachment.filename}:`, err.message);
+      }
     }
 
     emailContent += `\n--${boundary}--`;
