@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/gmailToGroupme",
+      "schedule": "*/1 * * * *"
+    },
+    {
+      "path": "/api/groupmeToEmail",
+      "schedule": "*/1 * * * *"
+    }
+  ]
+}
