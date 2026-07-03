@@ -61,19 +61,7 @@ This subscribes your Vercel webhook to Gmail notifications.
 
 Add these to Vercel dashboard:
 
-```env
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-GOOGLE_REFRESH_TOKEN=...
-GMAIL_EMAIL=your-email@gmail.com
 
-GROUPME_ACCESS_TOKEN=...
-GROUPME_GROUP_ID=...
-GROUPME_SENDER_ID=...
-GROUPME_IMAGE_UPLOAD_URL=https://image.groupme.com/pictures
-
-WEBHOOK_SECRET=random_secret_key
-GMAIL_WEBHOOK_URL=https://your-vercel-app.vercel.app/api/gmail-notification
 ```
 
 ---
